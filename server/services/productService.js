@@ -1,22 +1,36 @@
-const Product = require('../models/Product');
-const User = require('../models/User');
+const {Product,User} = require('../sqlmodels');
+//const User = require('../models/User');
 const { cloudinary } = require('../config/cloudinary');
 const { CLOUDINARY_STORAGE } = require('../config/config');
 
 async function getAll() {
-    return await Product.paginate();
+    const page = 1; // 가져올 페이지 번호
+    const pageSize = 10; // 페이지당 항목 수
+    return await Product.findAndCountAll({
+        offset: (page - 1) * pageSize,
+        limit: pageSize
+    });
+    //Product.paginate();
 }
 
 async function findByCategory(category) {
-    return await Product.find({ category: category })
+    return await Product.findAll({
+        where: {
+            category: category
+        }
+    });
 }
 
 async function findById(id) {
-    return await Product.findById(id);
+    return await Product.findByPk(id);
 }
 
 async function edit(id, data) {
-    return await Product.updateOne({ _id: id }, data);
+    return await Product.update(data, {
+        where: {
+            id: id
+        }
+    });
 }
 
 async function create(data, userId) {
@@ -47,7 +61,7 @@ async function userCollectionUpdate(userId, product) {
 }
 
 async function findUserById(id) {
-    return await User.findById(id);
+    return await User.findByPk(id);
 }
 
 module.exports = {

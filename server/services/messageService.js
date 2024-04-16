@@ -1,4 +1,4 @@
-const ChatRoom = require('../models/ChatRoom')
+const {ChatRoom} = require('../sqlmodels')
 
 async function createChatRoom(buyer, seller) {
     let chatRoom = new ChatRoom({ buyer, seller})

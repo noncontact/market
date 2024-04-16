@@ -8,15 +8,15 @@ const jwt = require('jsonwebtoken');
 router.post('/register', async (req, res) => {
     try {
         let createdUser = await authService.registerUser(req.body);
-        res.status(201).json({ _id: createdUser._id });
+        res.status(201).json({ _id: createdUser.id });
     } catch (error) {
         console.log(error)
         res.status(404).json({ error: error.message })
     }
 });
 
-router.post('/login', (req, res) => {
-    authService.loginUser(req.body)
+router.post('/login', async(req, res) => {
+    await authService.loginUser(req.body)
         .then(token => {
             jwt.verify(token, SECRET, (err, decoded) => {
                 if (err) {
@@ -41,8 +41,9 @@ router.get('/logout', (req, res) => {
 router.get('/getUser', async (req, res) => {
     if (req.user) {
         let user = await authService.getUser(req.user._id);
-        res.status(200).json({user: {_id: user._id, name: user.name, email: user.email, 
-            phoneNumber: user.phoneNumber, createdSells: user.createdSells.length, avatar: user.avatar}})
+        //let products = await user.getProducts();
+        res.status(200).json({user: {_id: user.id, name: user.name, email: user.email, 
+            phoneNumber: user.phoneNumber, createdSells: 0, avatar: user.avatar}})
     } else {
         res.status(200).json({message: "Not loged in"})
     }

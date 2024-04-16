@@ -1,9 +1,9 @@
 const { Router } = require('express');
 const router = Router();
-const { cloudinary } = require('../config/cloudinary');
+const { Op } = require('sequelize');
 const isAuth = require('../middlewares/isAuth')
-const Product = require('../models/Product');
-const User = require('../models/User');
+const {Product,User, Wishlist} = require('../sqlmodels');
+//const User = require('../models/User');
 const moment = require('moment');
 
 const productService = require('../services/productService');
@@ -12,16 +12,17 @@ router.get('/', async (req, res) => {
     const { page, search } = req.query;
     try {
         let products;
+        products = await Product.findAll();
+        if(products.length!=0){
         if (search !== '' && search !== undefined) {
-            products = await Product.find();
             products = products.filter(x => x.active == true)
             products = products.filter(x => x.title.toLowerCase().includes(search.toLowerCase()) || x.city.toLowerCase().includes(search.toLowerCase()))
-            res.status(200).json({ products: products, pages: products.pages });
+            
         } else {
-            products = await Product.paginate({}, { page: parseInt(page) || 1, limit: 5 });
             products.docs = products.docs.filter(x => x.active == true)
-            res.status(200).json({ products: products.docs, pages: products.pages });
         }
+        }
+        res.status(200).json({ products: products, pages: page });
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
@@ -30,8 +31,12 @@ router.get('/', async (req, res) => {
 router.get('/:category', async (req, res) => {
     const { page } = req.query;
     try {
-        let products = await Product.paginate({ category: req.params.category }, { page: parseInt(page) || 1, limit: 10 });
-        res.status(200).json({ products: products.docs, pages: products.pages });
+        let products = await Product.findAll({
+            where: {
+                category: req.params.category
+            }
+        });
+        res.status(200).json({ products: products.docs, pages: page });
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
@@ -39,8 +44,8 @@ router.get('/:category', async (req, res) => {
 
 router.get('/specific/:id', async (req, res) => {
     try {
-        let product = await (await Product.findById(req.params.id)).toJSON()
-        let seller = await (await User.findById(product.seller)).toJSON()
+        let product = await (await Product.findByPk(req.params.id)).toJSON()
+        let seller = await (await User.findByPk(product.seller)).toJSON()
         product.addedAt = moment(product.addedAt).format('d MMM YYYY (dddd) HH:mm')
         let jsonRes = {
             ...product,
@@ -49,13 +54,18 @@ router.get('/specific/:id', async (req, res) => {
             email: seller.email,
             createdSells: seller.createdSells.length,
             avatar: seller.avatar,
-            sellerId: seller._id,
+            sellerId: seller.id,
             isAuth: false
         }
         if (req.user) {
-            let user = await User.findById(req.user._id)
+            //let user = await User.findByPk(req.user._id);
+            let wishlist = await Wishlist.findAll({
+                where: {
+                    [Op.and]: [{ product_id: req.params.id }, { user_id: req.user._id }],
+                }
+            });
             jsonRes.isSeller = Boolean(req.user._id == product.seller);
-            jsonRes.isWished = user.wishedProducts.includes(req.params.id)
+            jsonRes.isWished = Boolean(wishlist);
             jsonRes.isAuth = true
         }
         res.status(200).json(jsonRes);
@@ -85,8 +95,8 @@ router.post('/create', async (req, res) => {
             seller: req.user._id
         })
 
-        await product.save()
-        await productService.userCollectionUpdate(req.user._id, product);
+        await product.save();
+        //await productService.userCollectionUpdate(req.user._id, product);
 
         res.status(201).json({ productId: product._id });
     } catch (err) {
@@ -102,7 +112,7 @@ router.patch('/edit/:id', isAuth, async (req, res) => {
         let user = await productService.findUserById(req.user._id);
         let product = await productService.findById(req.params.id);
         let errors = [];
-        if (user._id.toString() !== product.seller.toString()) {
+        if (user.id.toString() !== product.seller.toString()) {
             errors.push('You have no permission to perform this action! ')
         }
 
@@ -137,8 +147,13 @@ router.get('/sells/active/:id', async (req, res) => {
         } else {
             userId = req.user_id
         }
-        let user = await (await User.findById(userId).populate('createdSells')).toJSON();
-        res.status(200).json({ sells: user.createdSells.filter(x => x.active), user });
+        //let user = await (await User.findById(userId).populate('createdSells')).toJSON();
+        let product = await(await Product.findAll({
+            where: {
+                seller: userId ,
+            }
+        }));
+        res.status(200).json({ sells: product.filter(x => x.active) });
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
@@ -146,8 +161,12 @@ router.get('/sells/active/:id', async (req, res) => {
 
 router.get('/sells/archived', async (req, res) => {
     try {
-        let user = await (await User.findById(req.user._id).populate('createdSells')).toJSON();
-        res.status(200).json({ sells: user.createdSells.filter(x => x.active == false), user });
+        let product = await(await Product.findAll({
+            where: {
+                seller: req.user_id,
+            }
+        }));
+        res.status(200).json({ sells: product.filter(x => x.active == false) });
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
@@ -155,7 +174,12 @@ router.get('/sells/archived', async (req, res) => {
 
 router.get('/enable/:id', async (req, res) => {
     try {
-        await Product.updateOne({ _id: req.params.id }, { active: true });
+        //await Product.updateOne({ _id: req.params.id }, { active: true });
+        await Product.update({ active: true }, {
+            where: {
+                id: req.params.id
+            }
+        });
         res.status(200).json({ msg: "Activated" });
     } catch (error) {
         res.status(500).json({ message: error.message })
@@ -164,7 +188,12 @@ router.get('/enable/:id', async (req, res) => {
 
 router.get('/archive/:id', async (req, res) => {
     try {
-        await Product.updateOne({ _id: req.params.id }, { active: false });
+        //await Product.updateOne({ _id: req.params.id }, { active: false });
+        await Product.update({ active: true }, {
+            where: {
+                id: req.params.id
+            }
+        });
         res.status(200).json({ msg: "Archived" });
     } catch (error) {
         res.status(500).json({ message: error.message })
@@ -174,17 +203,27 @@ router.get('/archive/:id', async (req, res) => {
 
 router.get('/wish/:id', async (req, res) => {
     try {
-        let user = await User.findById(req.user._id);
+        //let user = await User.findByPk(req.user._id);
+        let wishlist = await Wishlist.findAll({
+            where: {
+                [Op.and]: [{ product_id: req.params.id }, { user_id: req.user._id }],
+            }
+        });
 
-        if (!user.wishedProducts.includes(req.params.id)) {
-            await User.updateOne({ _id: req.user._id }, { $push: { wishedProducts: req.params.id } })
-            await Product.updateOne({ _id: req.params.id }, { $push: { likes: user } });
-
+        if (!wishlist) {
+            //await User.updateOne({ _id: req.user._id }, { $push: { wishedProducts: req.params.id } })
+            //await Product.updateOne({ _id: req.params.id }, { $push: { likes: user } });
+            let wish=new Wishlist({product_id : req.params.id , user_id : req.user._id});
+            await wish.save();
             res.status(200).json({ msg: "wished" });
         } else {
-            await User.updateOne({ _id: req.user._id }, { $pull: { wishedProducts: req.params.id } })
-            await Product.updateOne({ _id: req.params.id }, { $pull: { likes: req.user._id } });
-
+            //await User.updateOne({ _id: req.user._id }, { $pull: { wishedProducts: req.params.id } })
+            //await Product.updateOne({ _id: req.params.id }, { $pull: { likes: req.user._id } });
+            await Wishlist.destroy({
+                where: {
+                    [Op.and]: [{ product_id: req.params.id }, { user_id: req.user._id }],
+                }
+            });
             res.status(200).json({ msg: "unwished" });
         }
     } catch (error) {
@@ -194,9 +233,18 @@ router.get('/wish/:id', async (req, res) => {
 
 router.get('/wishlist/:id', async (req, res) => {
     try {
-        let user = await (await User.findById(req.user._id).populate('wishedProducts')).toJSON();
+        //let user = await (await User.findById(req.user._id).populate('wishedProducts')).toJSON();
+        let wishlist =await Wishlist.findAll({
+            where: {
+                user_id: req.user._id ,
+            },
+            include:[{
+                model: Product,
+                as : 'products'
+            },],
+        });
 
-        res.status(200).json({ wishlist: user.wishedProducts });
+        res.status(200).json({ wishlist: wishlist.products });
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
