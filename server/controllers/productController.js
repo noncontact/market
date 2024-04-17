@@ -12,17 +12,33 @@ router.get('/', async (req, res) => {
     const { page, search } = req.query;
     try {
         let products;
-        products = await Product.findAll();
+        products = await Product.findAll({ 
+            raw: true,
+            attributes: [
+                ['id', '_id'], // 'id' 필드를 '_id'로 변경
+                "title",
+                "category",
+                "description",
+                "price",
+                "city",
+                "image",
+                "addedAt",
+                "seller",
+                "active"
+            // 다른 필드들
+            ]});
+
         if(products.length!=0){
         if (search !== '' && search !== undefined) {
             products = products.filter(x => x.active == true)
             products = products.filter(x => x.title.toLowerCase().includes(search.toLowerCase()) || x.city.toLowerCase().includes(search.toLowerCase()))
             
         } else {
-            products.docs = products.docs.filter(x => x.active == true)
+            products = products.filter(x => x.active == true)
         }
         }
-        res.status(200).json({ products: products, pages: page });
+        //console.log(products);
+        res.status(200).json({ products, pages: page });
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
@@ -34,9 +50,23 @@ router.get('/:category', async (req, res) => {
         let products = await Product.findAll({
             where: {
                 category: req.params.category
-            }
+            },
+            raw: true,
+            attributes: [
+                ['id', '_id'], // 'id' 필드를 '_id'로 변경
+                "title",
+                "category",
+                "description",
+                "price",
+                "city",
+                "image",
+                "addedAt",
+                "seller",
+                "active"
+            // 다른 필드들
+            ]
         });
-        res.status(200).json({ products: products.docs, pages: page });
+        res.status(200).json({ products, pages: page });
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
@@ -44,15 +74,28 @@ router.get('/:category', async (req, res) => {
 
 router.get('/specific/:id', async (req, res) => {
     try {
-        let product = await (await Product.findByPk(req.params.id)).toJSON()
-        let seller = await (await User.findByPk(product.seller)).toJSON()
+        let product = (await Product.findByPk(req.params.id,{
+            raw: true,
+            attributes:[['id', '_id'], // 'id' 필드를 '_id'로 변경
+                "title",
+                "category",
+                "description",
+                "price",
+                "city",
+                "image",
+                "addedAt",
+                "seller",
+                "active"]
+        }))
+        let seller = (await User.findByPk(product.seller))
+
         product.addedAt = moment(product.addedAt).format('d MMM YYYY (dddd) HH:mm')
         let jsonRes = {
             ...product,
             name: seller.name,
             phoneNumber: seller.phoneNumber,
             email: seller.email,
-            createdSells: seller.createdSells.length,
+            createdSells: 5,
             avatar: seller.avatar,
             sellerId: seller.id,
             isAuth: false
@@ -151,7 +194,20 @@ router.get('/sells/active/:id', async (req, res) => {
         let product = await(await Product.findAll({
             where: {
                 seller: userId ,
-            }
+            },
+            attributes: [
+                ['id', '_id'], // 'id' 필드를 '_id'로 변경
+                "title",
+                "category",
+                "description",
+                "price",
+                "city",
+                "image",
+                "addedAt",
+                "seller",
+                "active"
+            // 다른 필드들
+            ]
         }));
         res.status(200).json({ sells: product.filter(x => x.active) });
     } catch (error) {
@@ -164,7 +220,21 @@ router.get('/sells/archived', async (req, res) => {
         let product = await(await Product.findAll({
             where: {
                 seller: req.user_id,
-            }
+            },
+            raw: true,
+            attributes: [
+                ['id', '_id'], // 'id' 필드를 '_id'로 변경
+                "title",
+                "category",
+                "description",
+                "price",
+                "city",
+                "image",
+                "addedAt",
+                "seller",
+                "active"
+            // 다른 필드들
+            ]
         }));
         res.status(200).json({ sells: product.filter(x => x.active == false) });
     } catch (error) {
@@ -240,10 +310,9 @@ router.get('/wishlist/:id', async (req, res) => {
             },
             include:[{
                 model: Product,
-                as : 'products'
             },],
         });
-
+        console.log(wishlist);
         res.status(200).json({ wishlist: wishlist.products });
     } catch (error) {
         res.status(500).json({ message: error.message })

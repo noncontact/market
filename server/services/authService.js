@@ -33,8 +33,8 @@ async function loginUser({ email, password }) {
     console.log(2);
     if (!user) throw { message: 'Invalid email or password' };
 
-    //let hasValidPass = await bcrypt.compare(password, user.password);
-    //if (!hasValidPass) throw { message: "Invalid email or password" }
+    let hasValidPass = (password === user.password);
+    if (!hasValidPass) throw { message: "Invalid email or password" }
     console.log(3);
     let token = jwt.sign({ _id: user.id, email: user.email, phoneNumber: user.phoneNumber, createdSells: 0, avatar: user.avatar }, SECRET);
     console.log(4);

@@ -26,7 +26,7 @@ router.get('/getUserConversations', async (req, res) => {
         },
         include:[{
             model: Dialog,
-            as : 'conversation'
+            
         },{ 
             model: User,
             as: 'buyer', // buyerId와 연결된 User 모델을 가져오기 위해 as 옵션을 사용합니다.
@@ -40,7 +40,7 @@ router.get('/getUserConversations', async (req, res) => {
             _id : x.id,
             buyer: x.buyer,
             seller: x.seller,
-            conversation: x.conversation
+            conversation: x.dialogs
         };
 
         return {chats:chatroom,isBuyer:(x.buyer==req.user._id),myId:req.user._id}
