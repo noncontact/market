@@ -38,7 +38,7 @@ function Messages({ match }) {
             })
             .catch(err => console.log(err))
         if (isSelected) {
-            setSelected(conversations.find(x => x.chats._id === chatId))
+            setSelected(conversations.find(x => x.chats._id == chatId))
         }
     }, [isSelected, chatId, setSelected])
 
@@ -86,6 +86,7 @@ function Messages({ match }) {
                     {isSelected &&
                         <>
                             <div className="chat-selected-header col-lg-12">
+                                {console.log(conversations.find(x => x.chats._id == chatId))}
                                 {selected.isBuyer ?
                                     <Link to={`/profile/${selected.chats.seller._id}`}>
                                         <img src={selected.chats.seller.avatar} alt="user-avatar" />

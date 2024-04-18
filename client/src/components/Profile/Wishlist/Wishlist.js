@@ -13,7 +13,7 @@ function Wishlist() {
         window.scrollTo(0, 0);
         getUserWishlist()
             .then(res => {
-                setProduct(res.wishlist.filter(x => x.active === true));
+                setProduct(res.wishlist.filter(x => x.active == true));
                 setLoading(false)
             })
             .catch(err => console.log(err))

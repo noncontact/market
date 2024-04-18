@@ -87,8 +87,9 @@ router.get('/specific/:id', async (req, res) => {
                 "seller",
                 "active"]
         }))
-        let seller = (await User.findByPk(product.seller))
-
+        
+        let seller = (await User.findByPk(product.seller,{raw: true,}))
+        //console.log(seller);
         product.addedAt = moment(product.addedAt).format('d MMM YYYY (dddd) HH:mm')
         let jsonRes = {
             ...product,
@@ -103,6 +104,7 @@ router.get('/specific/:id', async (req, res) => {
         if (req.user) {
             //let user = await User.findByPk(req.user._id);
             let wishlist = await Wishlist.findAll({
+                raw: true,
                 where: {
                     [Op.and]: [{ product_id: req.params.id }, { user_id: req.user._id }],
                 }
@@ -140,8 +142,8 @@ router.post('/create', async (req, res) => {
 
         await product.save();
         //await productService.userCollectionUpdate(req.user._id, product);
-
-        res.status(201).json({ productId: product._id });
+        //console.log(product);
+        res.status(201).json({ productId: product.id });
     } catch (err) {
         console.error(err);
         res.status(404).json({ error: err.message })
@@ -188,13 +190,14 @@ router.get('/sells/active/:id', async (req, res) => {
         if (req.params.id) {
             userId = req.params.id
         } else {
-            userId = req.user_id
+            userId = req.user._id
         }
         //let user = await (await User.findById(userId).populate('createdSells')).toJSON();
-        let product = await(await Product.findAll({
+        let product = (await Product.findAll({
             where: {
                 seller: userId ,
             },
+            raw: true,
             attributes: [
                 ['id', '_id'], // 'id' 필드를 '_id'로 변경
                 "title",
@@ -209,17 +212,19 @@ router.get('/sells/active/:id', async (req, res) => {
             // 다른 필드들
             ]
         }));
+        //console.log(product);
         res.status(200).json({ sells: product.filter(x => x.active) });
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
 });
 
-router.get('/sells/archived', async (req, res) => {
+router.get('/sells/archived/', async (req, res) => {
     try {
-        let product = await(await Product.findAll({
+        //console.log(req.user._id);
+        let product = (await Product.findAll({
             where: {
-                seller: req.user_id,
+                seller: req.user._id,
             },
             raw: true,
             attributes: [
@@ -259,7 +264,7 @@ router.get('/enable/:id', async (req, res) => {
 router.get('/archive/:id', async (req, res) => {
     try {
         //await Product.updateOne({ _id: req.params.id }, { active: false });
-        await Product.update({ active: true }, {
+        await Product.update({ active: false }, {
             where: {
                 id: req.params.id
             }
@@ -280,7 +285,7 @@ router.get('/wish/:id', async (req, res) => {
             }
         });
 
-        if (!wishlist) {
+        if (wishlist.length===0) {
             //await User.updateOne({ _id: req.user._id }, { $push: { wishedProducts: req.params.id } })
             //await Product.updateOne({ _id: req.params.id }, { $push: { likes: user } });
             let wish=new Wishlist({product_id : req.params.id , user_id : req.user._id});
@@ -308,12 +313,27 @@ router.get('/wishlist/:id', async (req, res) => {
             where: {
                 user_id: req.user._id ,
             },
+            raw:true,
             include:[{
                 model: Product,
+                //raw:true,
             },],
         });
-        console.log(wishlist);
-        res.status(200).json({ wishlist: wishlist.products });
+        let products=wishlist.map(result => {
+            return {
+              _id: result[ 'Product.id'],
+              title: result['Product.title'],
+              category: result['Product.category'],
+              description: result['Product.description'],
+              price: result['Product.price'],
+              city: result['Product.city'],
+              image: result['Product.image'],
+              addedAt: result['Product.addedAt'],
+              seller: result['Product.seller'],
+              active: result['Product.active']
+        }});
+        console.log(products);
+        res.status(200).json({ wishlist: products });
     } catch (error) {
         res.status(500).json({ message: error.message })
     }

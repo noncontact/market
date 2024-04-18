@@ -26,18 +26,19 @@ async function registerUser(userData) {
 
 async function loginUser({ email, password }) {
     let user = await User.findOne({ 
+        raw: true,
         where: {
             email: email,
         },
     });
-    console.log(2);
+    //console.log(2);
     if (!user) throw { message: 'Invalid email or password' };
 
     let hasValidPass = (password === user.password);
     if (!hasValidPass) throw { message: "Invalid email or password" }
-    console.log(3);
+    //console.log(3);
     let token = jwt.sign({ _id: user.id, email: user.email, phoneNumber: user.phoneNumber, createdSells: 0, avatar: user.avatar }, SECRET);
-    console.log(4);
+    //console.log(4);
     return token;
 }
 

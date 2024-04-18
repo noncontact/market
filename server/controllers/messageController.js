@@ -1,14 +1,13 @@
 const router = require('express').Router();
 const { Op } = require('sequelize');
-const {ChatRoom,Dialog} = require('../sqlmodels')
+const {ChatRoom,Dialog,User} = require('../sqlmodels')
 const messageService = require('../services/messageService')
 
 router.post('/createChatRoom', async (req, res) => {
     const { message, receiver } = req.body;
     try {
         let chatRoom = await messageService.createChatRoom(req.user._id, receiver);
-        const dialog=new Dialog({chat_id:chatRoom.id , user_id : req.user._id , message});
-        await dialog.save();
+        await Dialog.create({chat_id:chatRoom.id , senderId : req.user._id , message});
         //await Dialog.updateOne({ _id: chatRoom._id }, { $push: { conversation: { senderId: req.user._id, message } } })
         res.status(200).json({ messageId: chatRoom.id })
     } catch (error) {
@@ -24,17 +23,19 @@ router.get('/getUserConversations', async (req, res) => {
         where: {
             [Op.or]: [{ buyer: req.user._id }, { seller: req.user._id }],
         },
+        raw:true,
         include:[{
             model: Dialog,
             
         },{ 
             model: User,
-            as: 'buyer', // buyerId와 연결된 User 모델을 가져오기 위해 as 옵션을 사용합니다.
+            
         },{ 
             model: User,
-            as: 'seller', // buyerId와 연결된 User 모델을 가져오기 위해 as 옵션을 사용합니다.
+            
         },],
     });
+    console.log(userChats);
     const checkedChats = userChats.map(x=>{
         let chatroom = {
             _id : x.id,
