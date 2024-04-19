@@ -10,9 +10,13 @@ const productService = require('../services/productService');
 
 router.get('/', async (req, res) => {
     const { page, search } = req.query;
+    const pageSize = 10; // 페이지당 아이템 수
+    const offset = (page - 1) * pageSize;
     try {
         let products;
-        products = await Product.findAll({ 
+        products = await Product.findAll({
+            offset: offset, // 오프셋 설정
+            limit: pageSize, // 페이지 크기 설정 
             raw: true,
             attributes: [
                 ['id', '_id'], // 'id' 필드를 '_id'로 변경
@@ -46,8 +50,12 @@ router.get('/', async (req, res) => {
 
 router.get('/:category', async (req, res) => {
     const { page } = req.query;
+    const pageSize = 10; // 페이지당 아이템 수
+    const offset = (page - 1) * pageSize;
     try {
         let products = await Product.findAll({
+            offset: offset, // 오프셋 설정
+            limit: pageSize, // 페이지 크기 설정 
             where: {
                 category: req.params.category
             },
@@ -110,7 +118,7 @@ router.get('/specific/:id', async (req, res) => {
                 }
             });
             jsonRes.isSeller = Boolean(req.user._id == product.seller);
-            jsonRes.isWished = Boolean(wishlist);
+            jsonRes.isWished = Boolean(wishlist.length!=0);
             jsonRes.isAuth = true
         }
         res.status(200).json(jsonRes);
@@ -332,7 +340,7 @@ router.get('/wishlist/:id', async (req, res) => {
               seller: result['Product.seller'],
               active: result['Product.active']
         }});
-        console.log(products);
+        //console.log(products);
         res.status(200).json({ wishlist: products });
     } catch (error) {
         res.status(500).json({ message: error.message })

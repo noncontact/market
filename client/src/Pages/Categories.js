@@ -17,7 +17,7 @@ function Categories({ match }) {
     const [loading, setLoading] = useState(true);
     const [sort, setSort] = useState('oldest');
 
-    useEffect(() => {
+    /*useEffect(() => {
         setPage(1);
         setLoading(true);
         setQuery("")
@@ -29,15 +29,15 @@ function Categories({ match }) {
                 setQuery("");
             })
             .catch(err => console.log(err));
-    }, [currentCategory, setProduct])
+    }, [currentCategory, setProduct])*/
 
     useEffect(() => {
         setPage(1);
         setLoading(true);
-        getAll(2, currentCategory, query)
+        getAll(1, currentCategory, query)
             .then(res => {
                 if (query === "") {
-                    setProduct(products => [...products, ...res.products]);
+                    setProduct(res.products);
                 } else {
                     setProduct(res.products)
                 }
@@ -55,7 +55,7 @@ function Categories({ match }) {
       return (
         <>
             <div id="sider">
-                <input className="col-lg-6" type="text" placeholder="Search..." name="search" value={query} onChange={handleSearch} />
+                <input className="col-lg-6" type="text" placeholder="Title or City..." name="search" value={query} onChange={handleSearch} />
             </div>
             <CategoriesNav />
             <div className="container">

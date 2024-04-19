@@ -36,10 +36,10 @@ module.exports = class User extends Sequelize.Model {
   }
   //관계 설정 JOIN
   static associate(db) {
-    db.ChatRoom.belongsTo(db.User, { foreignKey: "buyer", targetKey: "id" }); // Product : user = n : 1
-    db.ChatRoom.belongsTo(db.User, { foreignKey: "seller", targetKey: "id" });
+    db.ChatRoom.belongsTo(db.User, { foreignKey: "buyer", targetKey: "id" ,as:"buyers"}); // Product : user = n : 1
+    db.ChatRoom.belongsTo(db.User, { foreignKey: "seller", targetKey: "id" ,as:"sellers"});
     db.ChatRoom.hasMany(db.Dialog, {
-      foreignKey: "user_id",
+      foreignKey: "chat_id",
       sourceKey: "id",
     }); // user : Product = 1 : n
   }

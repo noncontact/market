@@ -18,7 +18,6 @@ module.exports = class User extends Sequelize.Model {
         },
         category: {
           type: Sequelize.STRING(255), // STRING : MySQL의 VARCHAR
-          unique: true,
         },
         description: {
           type: Sequelize.STRING(255),

@@ -35,7 +35,7 @@ function EditProfile({ history }) {
         let { _id, name, phoneNumber, email, avatar } = user;
         let obj = { name, phoneNumber, email }
         setLoading(true);
-        if (typeof avatar == 'object') {
+        if (avatar !== null) {
             getBase64(avatar)
                 .then((data) => {
                     obj['avatar'] = data;

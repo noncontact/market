@@ -23,25 +23,29 @@ router.get('/getUserConversations', async (req, res) => {
         where: {
             [Op.or]: [{ buyer: req.user._id }, { seller: req.user._id }],
         },
-        raw:true,
+        //raw:false,
         include:[{
-            model: Dialog,
-            
-        },{ 
-            model: User,
-            
-        },{ 
-            model: User,
-            
-        },],
+            model:Dialog,
+            attributes: ['senderId', 'message'],
+        },{
+            model:User,
+            as:"buyers",
+            attributes: ['id', 'name','email','password',"phoneNumber","gender","avatar"],
+        },{
+            model:User,
+            as:"sellers",
+            attributes: ['id', 'name','email','password',"phoneNumber","gender","avatar"],
+        }],
+
     });
-    console.log(userChats);
+    //console.log(userChats);
     const checkedChats = userChats.map(x=>{
+        console.log(x.Dialogs);
         let chatroom = {
             _id : x.id,
-            buyer: x.buyer,
-            seller: x.seller,
-            conversation: x.dialogs
+            buyer: x.dataValues.buyers.dataValues,
+            seller: x.dataValues.sellers.dataValues,
+            conversation: x.Dialogs
         };
 
         return {chats:chatroom,isBuyer:(x.buyer==req.user._id),myId:req.user._id}
@@ -52,7 +56,7 @@ router.get('/getUserConversations', async (req, res) => {
 router.post('/sendMessage', async (req, res) => {
     const { chatId, message } = req.body;
     //let chat = await ChatRoom.updateOne({ _id: chatId }, { $push: { conversation: { senderId: req.user._id, message } } })
-    const dialog=new Dialog({chat_id:chatId , user_id : req.user._id , message});
+    const dialog=new Dialog({chat_id:chatId , senderId : req.user._id , message});
     await dialog.save();
 
     //console.log(chat)

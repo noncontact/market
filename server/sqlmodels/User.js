@@ -51,16 +51,16 @@ module.exports = class User extends Sequelize.Model {
   }
   //관계 설정 JOIN
   static associate(db) {
-    db.User.hasMany(db.ChatRoom, {
+    /*db.User.hasMany(db.ChatRoom, {
       foreignKey: "buyer",
       sourceKey: "id",
-      as :'buyer',
+      as :'buyers',
     }); // user : ChatRoom = 1 : n
     db.User.hasMany(db.ChatRoom, {
       foreignKey: "seller",
       sourceKey: "id",
-      as :'seller',
-    }); // user : ChatRoom = 1 : n
+      as :'sellers',
+    }); // user : ChatRoom = 1 : n*/
     db.User.hasMany(db.Product, {
       foreignKey: "seller",
       sourceKey: "id",
