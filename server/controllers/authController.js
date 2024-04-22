@@ -35,6 +35,7 @@ router.post('/login', async(req, res) => {
 
 router.get('/logout', (req, res) => {
     res.clearCookie(COOKIE_NAME);
+    req.user = undefined;
     res.status(200).json({ message: 'Successfully logged out' })
 });
 
