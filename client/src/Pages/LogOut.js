@@ -1,5 +1,7 @@
+const baseUrl = process.env.REACT_APP_BASEURL;
+
 function LogOut({ history }) {
-    fetch('/auth/logout')
+    fetch(`${baseUrl}/auth/logout`)
         .then(res => res.json())
         .then(res => {
             history.push('/')

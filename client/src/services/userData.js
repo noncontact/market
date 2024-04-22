@@ -1,4 +1,4 @@
-const baseUrl = 'http://localhost:5000';
+const baseUrl = process.env.REACT_APP_BASEURL;
 
 export async function registerUser(userData) {
     return (await fetch(`${baseUrl}/auth/register`, {
@@ -12,7 +12,7 @@ export async function registerUser(userData) {
 }
 
 export async function loginUser(userData) {
-    return (await fetch(`/auth/login`, {
+    return (await fetch(`${baseUrl}/auth/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -23,7 +23,7 @@ export async function loginUser(userData) {
 }
 
 export async function getUser() {
-    return await (await fetch(baseUrl + '/auth/getUser', {credentials: 'include'})).json()
+    return await (await fetch(`${baseUrl}/auth/getUser`, {credentials: 'include'})).json()
 }
 
 export async function getUserActiveSells(id) {
@@ -39,7 +39,7 @@ export async function getUserWishlist() {
 }
 
 export async function editUserProfile(id, data) {
-    return (await fetch(`/user/edit-profile/${id}`, {
+    return (await fetch(`${baseUrl}/user/edit-profile/${id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -50,5 +50,5 @@ export async function editUserProfile(id, data) {
 }
 
 export async function getUserById(id) {
-    return await (await fetch(baseUrl + `/user/getUserById/${id}`, {credentials: 'include'})).json()
+    return await (await fetch(`${baseUrl}/user/getUserById/${id}`, {credentials: 'include'})).json()
 }

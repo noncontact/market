@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 // import { useCookies } from 'react-cookie'
 export const Context = React.createContext();
-
+const baseUrl = process.env.REACT_APP_BASEURL;
 export const ContextStore = ({ children }) => {
     let initialValue = null;
     // const [cookies, setCookie, removeCookie] = useCookies(['USER_SESSION']);
@@ -9,10 +9,10 @@ export const ContextStore = ({ children }) => {
     
     useEffect(() => {
         //if (cookies.USER_SESSION) {
-            fetch(`/auth/getUser`).then(res => res.json())
+            fetch(`${baseUrl}/auth/getUser`).then(res => res.json())
                 .then(res => {
                     return setUserData(res.user)
-                })
+                }).catch(err => console.log(err));
         //}
     }, [])
 

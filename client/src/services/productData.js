@@ -1,4 +1,4 @@
-const baseUrl = 'http://localhost:5000';
+const baseUrl = process.env.REACT_APP_BASEURL;
 
 export async function getAll(page, category, query) {
     if (query !== "" && query !== undefined) {
@@ -38,11 +38,11 @@ export async function editProduct(id, product) {
 
 
 export async function activateSell(id) {
-    return (await fetch(`/products/enable/${id}`)).json()
+    return (await fetch(`${baseUrl}/products/enable/${id}`)).json()
 }
 
 export async function archiveSell(id) {
-    return (await fetch(`/products/archive/${id}`)).json()
+    return (await fetch(`${baseUrl}/products/archive/${id}`)).json()
 }
 
 export async function wishProduct(id) {

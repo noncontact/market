@@ -1,4 +1,4 @@
-const baseUrl = 'http://localhost:5000';
+const baseUrl = process.env.REACT_APP_BASEURL;
 
 export async function createChatRoom(receiver, message) {
     return (await fetch(`${baseUrl}/messages/createChatRoom`, {
