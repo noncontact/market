@@ -35,7 +35,7 @@ jobs:
         run: cd client;npm install
         
       - name: react build
-        run: cd client;ls -a;npm run build
+        run: cd client;npm run build
       
       # aws에 접근하기 위한 권한을 받아옵니다.
       - name: Configure AWS credentials
