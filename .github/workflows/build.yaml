@@ -21,7 +21,10 @@ jobs:
       # 레포지토리에 접근하여 CI서버로 코드를 내려받는 과정입니다.
       - name: checkout Github Action
         uses: actions/checkout@v3
-      
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'npm'
       # workflow가 실행될 때 필요한 파일 중에서 거의 바뀌지 않는 파일들을 GitHub의 캐시에 올려놓고 CI 서버로 내려받습니다.
       # 프로젝트에서 자주 바뀌지 않는 수많은 패키지를 매번 다운받아 올리면 시간도 오래걸리고 네트워크 대역폭을 많이 사용하게됩니다.
       - name: Get npm cache directory
@@ -35,6 +38,7 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+
       - name: .env setting
         run: |
           echo "REACT_APP_BASEURL=${{ secrets.REACT_APP_BASEURL }}" >> ./client/.env
