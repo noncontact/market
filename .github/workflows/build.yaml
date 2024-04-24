@@ -35,12 +35,16 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      
+      - name: .env setting
+        run: |
+          echo "REACT_APP_SERVER_IP=${{ secrets.REACT_APP_SERVER_IP }}" >> ./client/.env
+          echo "REACT_APP_EXAMPLE=${{ secrets.REACT_APP_EXAMPLE }}" >> ./client/.env
+
       - name: install npm dependencies
         run: cd client;npm install
         
       - name: react build
-        run: cd client;npm run build
+        run: cd client;ls -a;npm run build
       
       # aws에 접근하기 위한 권한을 받아옵니다.
       - name: Configure AWS credentials
