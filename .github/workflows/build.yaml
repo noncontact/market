@@ -1,4 +1,4 @@
-ame: Front Deployment
+name: Front Deployment
 
 # trigger가 되길 바라는 action을 입력합니다. push / pull_request가 있습니다.
 # 저는 develop 브랜치에 push가 되면 actions을 실행하도록 설정했습니다.
