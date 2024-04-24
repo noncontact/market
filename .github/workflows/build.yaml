@@ -37,8 +37,7 @@ jobs:
             ${{ runner.os }}-node-
       - name: .env setting
         run: |
-          echo "REACT_APP_SERVER_IP=${{ secrets.REACT_APP_SERVER_IP }}" >> ./client/.env
-          echo "REACT_APP_EXAMPLE=${{ secrets.REACT_APP_EXAMPLE }}" >> ./client/.env
+          echo "REACT_APP_BASEURL=${{ secrets.REACT_APP_BASEURL }}" >> ./client/.env
 
       - name: install npm dependencies
         run: cd client;npm install
