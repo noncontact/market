@@ -8,11 +8,9 @@ All for you is a marketplace application for buying and selling services and goo
 
 # Tech Stack
 
-![MERN stack](https://res.cloudinary.com/silenceiv/image/upload/c_fill,h_205,w_512/v1617484581/mern_sakbwj.png)
 
-- MERN (MongoDB, Express.js, React, and Node.js) Solution stack;
-- [Cloudinary](https://cloudinary.com/) as a file storage cloud API;
-- [Unsplash](https://unsplash.com/) as image provider;
+- SERN (mySQL, Express.js, React, and Node.js) Solution stack;
+- [S3] as a file storage aws API;
 - [React-Bootstrap](https://react-bootstrap.github.io/);
 - Responsive Design;
 - UX & UI;
@@ -20,7 +18,7 @@ All for you is a marketplace application for buying and selling services and goo
 
 # How to run 
 
-- Install [MongoDB](https://www.mongodb.com/try/download)
+- Install [mysql]
 - Navigate to server folder
 ```bash
 cd server
